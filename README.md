@@ -3,18 +3,27 @@
 [![GitHub](https://img.shields.io/github/stars/ismailhakkii/karar_carki?style=social)](https://github.com/ismailhakkii/karar_carki)
 
 ## 📱 Karar Vermek Hiç Bu Kadar Eğlenceli Olmamıştı! 🎉
-![image](https://github.com/user-attachments/assets/ec4f0df6-67df-431e-be3e-60743e4525bc)
 
+![Karar Çarkı Banner](https://via.placeholder.com/800x200/4CAF50/FFFFFF/?text=Karar+Carki)
 
 **Karar Çarkı**, hayatın zor kararlarını çözmek için eğlenceli bir Flutter uygulaması! Akşam yemeğinde ne yiyeceğinize karar veremediğinizde, hangi filmi izleyeceğinizi seçemediğinizde ya da hafta sonu ne yapacağınızı bilmediğinizde... Karar Çarkı yanınızda! 😎
 
 ## ✨ Özellikler
 
 - 🔮 Sınırsız sayıda özelleştirilebilir çark oluşturabilme
-- 🎨 Basit ve kullanıcı dostu arayüz
+- 🎨 Açık/koyu tema desteği ile kullanıcı dostu arayüz
 - 🔄 Heyecan verici çark çevirme animasyonu
 - 💾 Çarkları cihazınıza otomatik kaydetme
 - 🎯 Hızlı ve eğlenceli karar alma deneyimi
+- 🔍 Kayıtlı çarklar arasında arama yapabilme
+
+## 🧩 Teknik Altyapı
+
+- **Clean Architecture**: Domain, data ve presentation katmanları
+- **BLoC Pattern**: Uygulama state yönetimi için Flutter BLoC
+- **Dependency Injection**: GetIt ile bağımlılık yönetimi
+- **Provider**: UI state yönetimi ve theme değişiklikleri için
+- **Shared Preferences**: Yerel veri depolama
 
 ## 📲 Nasıl Kullanılır?
 
@@ -42,15 +51,20 @@ flutter run
 
 ## 🛠️ Yapılacaklar & Gelecek Özellikler
 
-- [ ] Tema desteği (Koyu/Açık mod)
 - [ ] Çarkların özelleştirilebilir renkleri
 - [ ] Kararlarınızın geçmişini görüntüleme
 - [ ] Çark sonuçlarını paylaşma özelliği
 - [ ] Ses efektleri ve titreşim desteği
+- [ ] İstatistik paneli
+- [ ] Bulut senkronizasyonu
 
-## 💡 Fikirlerinizi Bekliyoruz!
+## 💡 Katkıda Bulunma
 
-Uygulama hakkında öneri ve geri bildirimlerinizi GitHub'da issue açarak veya pull request göndererek paylaşabilirsiniz.
+1. Bu repository'yi fork edin
+2. Özellik branch'i oluşturun (`git checkout -b yeni-ozellik`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Yeni özellik: Açıklama'`)
+4. Branch'inize push edin (`git push origin yeni-ozellik`)
+5. Pull Request açın
 
 ## 📄 Lisans
 
