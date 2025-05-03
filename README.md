@@ -79,3 +79,6 @@ Sevgiyle ❤️ tarafından geliştirilen bir uygulama:
 ---
 
 > "Karar vermek zor olabilir, ama artık bir çarkımız var!" 🎭
+
+
+---
