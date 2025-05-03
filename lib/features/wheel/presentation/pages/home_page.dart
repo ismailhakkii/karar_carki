@@ -1,32 +1,109 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:karar_carki/core/providers/theme_provider.dart';
 import 'package:karar_carki/features/wheel/domain/entities/wheel.dart';
 import 'package:karar_carki/features/wheel/presentation/bloc/wheel_bloc.dart';
 import 'package:karar_carki/features/wheel/presentation/pages/wheel_detail_page.dart';
 import 'package:karar_carki/features/wheel/presentation/widgets/wheel_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeIn,
+      ),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Karar Çarkı'),
+        title: FadeTransition(
+          opacity: _fadeAnimation,
+          child: const Text('Karar Çarkı'),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              _showInfoDialog(context);
-            },
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: IconButton(
+              icon: Icon(
+                Provider.of<ThemeProvider>(context).isDarkMode
+                    ? Icons.light_mode
+                    : Icons.dark_mode,
+              ),
+              onPressed: () {
+                final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+                themeProvider.setThemeMode(
+                  themeProvider.isDarkMode ? ThemeMode.light : ThemeMode.dark,
+                );
+              },
+            ),
+          ),
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () {
+                _showInfoDialog(context);
+              },
+            ),
           ),
         ],
       ),
       body: BlocBuilder<WheelBloc, WheelState>(
         builder: (context, state) {
           if (state is WheelLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: const Text('Yükleniyor...'),
+                  ),
+                ],
+              ),
             );
           } else if (state is WheelError) {
             return Center(
@@ -39,10 +116,13 @@ class HomePage extends StatelessWidget {
                     size: 48,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    state.message,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      state.message,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -60,20 +140,29 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Icon(
+                        Icons.add_circle_outline,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Henüz çark oluşturulmamış',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Text(
+                        'Henüz çark oluşturulmamış',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Yeni bir çark oluşturmak için + butonuna tıklayın',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Text(
+                        'Yeni bir çark oluşturmak için + butonuna tıklayın',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
                   ],
                 ),
@@ -94,16 +183,32 @@ class HomePage extends StatelessWidget {
                   )),
                   child: FadeTransition(
                     opacity: animation,
-                    child: WheelCard(
-                      wheel: wheel,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WheelDetailPage(wheel: wheel),
-                          ),
-                        );
-                      },
+                    child: ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.8,
+                        end: 1.0,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOut,
+                      )),
+                      child: WheelCard(
+                        wheel: wheel,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                  WheelDetailPage(wheel: wheel),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 );
@@ -113,12 +218,18 @@ class HomePage extends StatelessWidget {
           return const SizedBox();
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _showCreateWheelDialog(context);
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Yeni Çark'),
+      floatingActionButton: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              _showCreateWheelDialog(context);
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Yeni Çark'),
+          ),
+        ),
       ),
     );
   }
@@ -162,6 +273,7 @@ class HomePage extends StatelessWidget {
     final nameController = TextEditingController();
     final List<String> options = [];
     final formKey = GlobalKey<FormState>();
+    final optionController = TextEditingController();
 
     showDialog(
       context: context,
@@ -202,15 +314,33 @@ class HomePage extends StatelessWidget {
                       'Henüz seçenek eklenmemiş',
                       style: TextStyle(color: Colors.grey),
                     ),
-                  ...options.map((option) => ListTile(
-                    title: Text(option),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        setState(() {
-                          options.remove(option);
-                        });
-                      },
+                  ...options.map((option) => Dismissible(
+                    key: Key(option),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 16),
+                      color: Colors.red,
+                      child: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onDismissed: (direction) {
+                      setState(() {
+                        options.remove(option);
+                      });
+                    },
+                    child: ListTile(
+                      title: Text(option),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            options.remove(option);
+                          });
+                        },
+                      ),
                     ),
                   )),
                   const SizedBox(height: 16),
@@ -218,6 +348,7 @@ class HomePage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          controller: optionController,
                           decoration: InputDecoration(
                             labelText: 'Yeni Seçenek',
                             hintText: 'Seçenek ekle',
@@ -230,6 +361,7 @@ class HomePage extends StatelessWidget {
                             if (value.trim().isNotEmpty) {
                               setState(() {
                                 options.add(value.trim());
+                                optionController.clear();
                               });
                             }
                           },
@@ -239,10 +371,11 @@ class HomePage extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.add_circle),
                         onPressed: () {
-                          final option = nameController.text.trim();
+                          final option = optionController.text.trim();
                           if (option.isNotEmpty) {
                             setState(() {
                               options.add(option);
+                              optionController.clear();
                             });
                           }
                         },
@@ -264,6 +397,16 @@ class HomePage extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('En az bir seçenek eklemelisiniz'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (options.length < 2) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('En az iki seçenek eklemelisiniz'),
                           backgroundColor: Colors.red,
                         ),
                       );
