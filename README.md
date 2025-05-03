@@ -3,8 +3,8 @@
 [![GitHub](https://img.shields.io/github/stars/ismailhakkii/karar_carki?style=social)](https://github.com/ismailhakkii/karar_carki)
 
 ## 📱 Karar Vermek Hiç Bu Kadar Eğlenceli Olmamıştı! 🎉
+![image](https://github.com/user-attachments/assets/ec4f0df6-67df-431e-be3e-60743e4525bc)
 
-![Karar Çarkı Banner](https://via.placeholder.com/800x200/4CAF50/FFFFFF/?text=Karar+Carki)
 
 **Karar Çarkı**, hayatın zor kararlarını çözmek için eğlenceli bir Flutter uygulaması! Akşam yemeğinde ne yiyeceğinize karar veremediğinizde, hangi filmi izleyeceğinizi seçemediğinizde ya da hafta sonu ne yapacağınızı bilmediğinizde... Karar Çarkı yanınızda! 😎
 
