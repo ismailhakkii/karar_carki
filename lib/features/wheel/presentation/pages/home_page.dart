@@ -6,6 +6,10 @@ import 'package:karar_carki/features/wheel/domain/entities/wheel.dart';
 import 'package:karar_carki/features/wheel/presentation/bloc/wheel_bloc.dart';
 import 'package:karar_carki/features/wheel/presentation/pages/wheel_detail_page.dart';
 import 'package:karar_carki/features/wheel/presentation/widgets/wheel_card.dart';
+import 'package:karar_carki/features/common/widgets/custom_app_bar.dart';
+import 'package:simple_animations/simple_animations.dart';
+import 'dart:math';
+import 'package:confetti/confetti.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,10 +18,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late AnimationController _fabController;
+  late ConfettiController _confettiController;
 
   @override
   void initState() {
@@ -26,6 +32,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    _fabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -50,17 +61,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     _animationController.dispose();
+    _fabController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: FadeTransition(
-          opacity: _fadeAnimation,
-          child: const Text('Karar Çarkı'),
-        ),
+      appBar: CustomAppBar(
+        title: 'Karar Çarkı',
         actions: [
           FadeTransition(
             opacity: _fadeAnimation,
@@ -69,6 +79,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Provider.of<ThemeProvider>(context).isDarkMode
                     ? Icons.light_mode
                     : Icons.dark_mode,
+                color: Colors.white,
               ),
               onPressed: () {
                 final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
@@ -81,7 +92,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           FadeTransition(
             opacity: _fadeAnimation,
             child: IconButton(
-              icon: const Icon(Icons.info_outline),
+              icon: const Icon(Icons.info_outline, color: Colors.white),
               onPressed: () {
                 _showInfoDialog(context);
               },
@@ -89,147 +100,185 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ],
       ),
-      body: BlocBuilder<WheelBloc, WheelState>(
-        builder: (context, state) {
-          if (state is WheelLoading) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: const Text('Yükleniyor...'),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is WheelError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      state.message,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<WheelBloc>().add(const LoadWheels());
-                    },
-                    child: const Text('Tekrar Dene'),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is WheelLoaded) {
-            if (state.wheels.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Icon(
-                        Icons.add_circle_outline,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+      body: Stack(
+        children: [
+          AnimatedBackground(),
+          BlocBuilder<WheelBloc, WheelState>(
+            builder: (context, state) {
+              if (state is WheelLoading) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: const Text('Yükleniyor...'),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Text(
-                        'Henüz çark oluşturulmamış',
-                        style: Theme.of(context).textTheme.titleMedium,
+                    ],
+                  ),
+                );
+              } else if (state is WheelError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 48,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Text(
-                        'Yeni bir çark oluşturmak için + butonuna tıklayın',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                      const SizedBox(height: 16),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          state.message,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<WheelBloc>().add(const LoadWheels());
+                        },
+                        child: const Text('Tekrar Dene'),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (state is WheelLoaded) {
+                if (state.wheels.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Icon(
+                            Icons.add_circle_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Text(
+                            'Henüz çark oluşturulmamış',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Text(
+                            'Yeni bir çark oluşturmak için + butonuna tıklayın',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            }
-            return AnimatedList(
-              padding: const EdgeInsets.all(16),
-              initialItemCount: state.wheels.length,
-              itemBuilder: (context, index, animation) {
-                final wheel = state.wheels[index];
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOut,
-                  )),
-                  child: FadeTransition(
-                    opacity: animation,
-                    child: ScaleTransition(
-                      scale: Tween<double>(
-                        begin: 0.8,
-                        end: 1.0,
+                  );
+                }
+                return AnimatedList(
+                  padding: const EdgeInsets.all(16),
+                  initialItemCount: state.wheels.length,
+                  itemBuilder: (context, index, animation) {
+                    final wheel = state.wheels[index];
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(1, 0),
+                        end: Offset.zero,
                       ).animate(CurvedAnimation(
                         parent: animation,
                         curve: Curves.easeOut,
                       )),
-                      child: WheelCard(
-                        wheel: wheel,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                  WheelDetailPage(wheel: wheel),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                            ),
-                          );
-                        },
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 0.8,
+                            end: 1.0,
+                          ).animate(CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOut,
+                          )),
+                          child: WheelCard(
+                            wheel: wheel,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      WheelDetailPage(wheel: wheel),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
-              },
-            );
-          }
-          return const SizedBox();
-        },
-      ),
-      floatingActionButton: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: FloatingActionButton.extended(
-            onPressed: () {
-              _showCreateWheelDialog(context);
+              }
+              return const SizedBox();
             },
-            icon: const Icon(Icons.add),
-            label: const Text('Yeni Çark'),
           ),
-        ),
+        ],
+      ),
+      floatingActionButton: Stack(
+        alignment: Alignment.center,
+        children: [
+          ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            emissionFrequency: 0.2,
+            numberOfParticles: 20,
+            maxBlastForce: 20,
+            minBlastForce: 8,
+            gravity: 0.3,
+            colors: [
+              Colors.pink,
+              Colors.blue,
+              Colors.orange,
+              Colors.green,
+              Colors.purple,
+              Colors.yellow,
+            ],
+          ),
+          AnimatedBuilder(
+            animation: _fabController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1 + 0.08 * sin(_fabController.value * 2 * pi),
+                child: child,
+              );
+            },
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: FloatingActionButton.extended(
+                  onPressed: () {
+                    _showCreateWheelDialog(context);
+                    _confettiController.play();
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Yeni Çark'),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -429,4 +478,43 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
     );
   }
+}
+
+class AnimatedBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MirrorAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 2 * 3.14),
+      duration: const Duration(seconds: 10),
+      builder: (context, value, child) {
+        return CustomPaint(
+          painter: ParticlePainter(value),
+          child: Container(),
+        );
+      },
+    );
+  }
+}
+
+class ParticlePainter extends CustomPainter {
+  final double value;
+  ParticlePainter(this.value);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = Random(42);
+    for (int i = 0; i < 30; i++) {
+      final radius = 8.0 + random.nextDouble() * 12;
+      final dx = (size.width * random.nextDouble()) +
+          20 * sin(value + i);
+      final dy = (size.height * random.nextDouble()) +
+          20 * cos(value + i);
+      final paint = Paint()
+        ..color = Colors.primaries[i % Colors.primaries.length].withOpacity(0.15);
+      canvas.drawCircle(Offset(dx, dy), radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant ParticlePainter oldDelegate) => true;
 } 
